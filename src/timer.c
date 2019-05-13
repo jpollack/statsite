@@ -13,9 +13,7 @@ static void finalize_timer(timer *timer);
  * @return 0 on success.
  */
 int init_timer(double eps, double *quantiles, uint32_t num_quants, timer *timer) {
-    timer->actual_count = 0;
     timer->count = 0;
-    timer->sum = 0;
     timer->squared_sum = 0;
     timer->finalized = 1;
     stats_clear (&(timer->so));
@@ -41,10 +39,8 @@ int destroy_timer(timer *timer) {
  */
 int timer_add_sample(timer *timer, double sample, double sample_rate) {
     stats_add (&(timer->so), sample);
-    /* timer->actual_count += 1; */
     timer->count += (1 / sample_rate);
-    /* timer->sum += sample; */
-    timer->squared_sum += pow(sample, 2);
+    timer->squared_sum += (sample * sample);
     timer->finalized = 0;
     return cm_add_sample(&timer->cm, sample);
 }
@@ -66,7 +62,7 @@ double timer_query(timer *timer, double quantile) {
  * @return The number of samples
  */
 uint64_t timer_count(timer *timer) {
-    return stats_count (&(timer->so));
+    return timer->count;	// Note that this is not the actual count.
 }
 
 /**
@@ -75,9 +71,7 @@ uint64_t timer_count(timer *timer) {
  * @return The number of samples
  */
 double timer_min(timer *timer) {
-    finalize_timer(timer);
-    if (!timer->cm.samples) return 0;
-    return timer->cm.samples->value;
+    return stats_min (&(timer->so));
 }
 
 /**
@@ -96,10 +90,6 @@ double timer_mean(timer *timer) {
  */
 double timer_stddev(timer *timer) {
     return sqrt (stats_var (&(timer->so)));
-    /* double num = (timer->actual_count * timer->squared_sum) - pow(timer->sum, 2); */
-    /* double div = timer->actual_count * (timer->actual_count - 1); */
-    /* if (div == 0) return 0; */
-    /* return sqrt(num / div); */
 }
 
 /**
@@ -126,9 +116,7 @@ double timer_squared_sum(timer *timer) {
  * @return The maximum value
  */
 double timer_max(timer *timer) {
-    finalize_timer(timer);
-    if (!timer->cm.end) return 0;
-    return timer->cm.end->value;
+    return stats_max (&(timer->so));
 }
 
 // Finalizes the timer for queries

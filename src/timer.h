@@ -5,9 +5,7 @@
 #include "stats.h"
 
 typedef struct {
-    uint64_t actual_count; // Actual items recieved
     uint64_t count;     // Count of items (1 / sample rate)
-    double sum;         // Sum of the values
     double squared_sum; // Sum of the squared values
     int finalized;      // Is the cm_quantile finalized
     cm_quantile cm;     // Quantile we use
