@@ -18,6 +18,7 @@ int init_timer(double eps, double *quantiles, uint32_t num_quants, timer *timer)
     timer->sum = 0;
     timer->squared_sum = 0;
     timer->finalized = 1;
+    stats_clear (&(timer->so));
     int res = init_cm_quantile(eps, quantiles, num_quants, &timer->cm);
     return res;
 }
@@ -39,9 +40,10 @@ int destroy_timer(timer *timer) {
  * @return 0 on success.
  */
 int timer_add_sample(timer *timer, double sample, double sample_rate) {
-    timer->actual_count += 1;
+    stats_add (&(timer->so), sample);
+    /* timer->actual_count += 1; */
     timer->count += (1 / sample_rate);
-    timer->sum += sample;
+    /* timer->sum += sample; */
     timer->squared_sum += pow(sample, 2);
     timer->finalized = 0;
     return cm_add_sample(&timer->cm, sample);
@@ -64,7 +66,7 @@ double timer_query(timer *timer, double quantile) {
  * @return The number of samples
  */
 uint64_t timer_count(timer *timer) {
-    return timer->count;
+    return stats_count (&(timer->so));
 }
 
 /**
@@ -84,7 +86,7 @@ double timer_min(timer *timer) {
  * @return The mean value
  */
 double timer_mean(timer *timer) {
-    return (timer->actual_count) ? timer->sum / timer->actual_count : 0;
+    return stats_mean (&(timer->so));
 }
 
 /**
@@ -93,10 +95,11 @@ double timer_mean(timer *timer) {
  * @return The sample standard deviation
  */
 double timer_stddev(timer *timer) {
-    double num = (timer->actual_count * timer->squared_sum) - pow(timer->sum, 2);
-    double div = timer->actual_count * (timer->actual_count - 1);
-    if (div == 0) return 0;
-    return sqrt(num / div);
+    return sqrt (stats_var (&(timer->so)));
+    /* double num = (timer->actual_count * timer->squared_sum) - pow(timer->sum, 2); */
+    /* double div = timer->actual_count * (timer->actual_count - 1); */
+    /* if (div == 0) return 0; */
+    /* return sqrt(num / div); */
 }
 
 /**
@@ -105,7 +108,7 @@ double timer_stddev(timer *timer) {
  * @return The sum of values
  */
 double timer_sum(timer *timer) {
-    return timer->sum;
+    return stats_sum (&(timer->so));
 }
 
 /**

@@ -2,6 +2,7 @@
 #define TIMER_H
 #include <stdint.h>
 #include "cm_quantile.h"
+#include "stats.h"
 
 typedef struct {
     uint64_t actual_count; // Actual items recieved
@@ -10,6 +11,7 @@ typedef struct {
     double squared_sum; // Sum of the squared values
     int finalized;      // Is the cm_quantile finalized
     cm_quantile cm;     // Quantile we use
+    stats_t so;
 } timer;
 
 /**

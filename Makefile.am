@@ -28,7 +28,8 @@ statsite_SOURCES = \
        src/config.c \
        src/networking.c \
        src/conn_handler.c \
-       src/statsite.c
+       src/statsite.c \
+	src/stats.c
 
 
 statsite_LDADD = deps/ae/libae.a deps/inih/libinih.a deps/murmurhash/libmurmur.a
@@ -65,6 +66,7 @@ src/hll.c \
 src/set.c \
 src/cm_quantile.c \
 src/timer.c \
+src/stats.c \
 src/counter.c \
 src/metrics.c \
 src/streaming.c \
